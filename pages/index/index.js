@@ -6,6 +6,28 @@ Page({
     onLoad: function() { 
         // this.linkSocket()
         const that = this;
+
+        wx.login({
+            success:function(res){
+              console.log("uuuuuuuuuuuuu",res)
+              wx.request({
+                url:'https://api.chongwu-family.xyz/login',
+                header:{'Content-Type': 'application/x-www-form-urlencoded'},
+                data:{code:res.code},
+                method:"post",
+                dataType:"json",
+                success:function(res){
+                  // wx.setStorageSync('uid',res.data.uid);
+                  // that.setData({"uid":res.data.uid});
+                  const result = res.data;
+                  if(result.state == "no"){
+                    console.log("iiiiiiiiiiiiiii","未登录，请重新绑定")
+                  }
+                }
+              })
+            }
+        })
+
         wx.connectSocket({
           url: 'wss://www.chongwu-family.xyz:9603'
         })
