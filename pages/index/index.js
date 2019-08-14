@@ -6,27 +6,20 @@ Page({
     onLoad: function() { 
         // this.linkSocket()
         const that = this;
-
-        wx.login({
-            success:function(res){
-              console.log("uuuuuuuuuuuuu",res)
-              wx.request({
-                url:'https://api.chongwu-family.xyz/login',
-                header:{'Content-Type': 'application/x-www-form-urlencoded'},
-                data:{code:res.code},
-                method:"post",
-                dataType:"json",
-                success:function(res){
-                  // wx.setStorageSync('uid',res.data.uid);
-                  // that.setData({"uid":res.data.uid});
-                  const result = res.data;
-                  if(result.state == "no"){
-                    console.log("iiiiiiiiiiiiiii","未登录，请重新绑定")
-                  }
-                }
-              })
-            }
-        })
+		var openid = wx.getStorageSync('openid');
+		console.log("openid",openid);
+		if(!openid){
+			wx.login({
+				success:function(res){
+				  console.log("uuuuuuuuuuuuu",res)
+				  var obj = {code:res.code};
+				  that.getUser(obj);
+				}
+			})
+		}else{
+			var obj = {openid:openid};
+			that.getUser(obj);
+		}
 
         wx.connectSocket({
           url: 'wss://www.chongwu-family.xyz:9603'
@@ -64,6 +57,28 @@ Page({
                 }
             }
         })
+    },
+	getUser:function(obj){
+		wx.request({
+		url:'https://api.chongwu-family.xyz/login',
+		header:{'Content-Type': 'application/x-www-form-urlencoded'},
+		data:obj,
+		method:"post",
+		dataType:"json",
+		success:function(res){
+		  // wx.setStorageSync('uid',res.data.uid);
+		  // that.setData({"uid":res.data.uid});
+		  const result = res.data;
+		  wx.setStorageSync('openid',result.openid);
+		  if(result.state == "no"){
+			console.log("iiiiiiiiiiiiiii","未登录，请重新绑定")
+				wx.redirectTo({
+					url: '../login/index'
+				})
+		  }
+		}
+	  })
+	}
 
 
 
@@ -106,7 +121,6 @@ Page({
     //             business: '商圈：' + data[i].business 
     //         } 
     //     }); 
-    },
     // linkSocket(){
     //     let that = this
     //     wx.connectSocket({
