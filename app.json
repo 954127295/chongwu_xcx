@@ -1,13 +1,33 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/logs/logs"
+    "pages/login/index"
   ],
   "window": {
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#fff",
-    "navigationBarTitleText": "WeChat",
+    "navigationBarTitleText": "dog family",
     "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "color": "#858585",
+    "selectedColor": "#39b5de",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "img/index_i.png",
+        "selectedIconPath": "img/index_i.png",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/login/index",
+        "iconPath": "img/change_bd.png",
+        "selectedIconPath": "img/change_bd.png",
+        "text": "设备绑定"
+      }
+    ]
   },
   "permission": {
     "scope.userLocation": {

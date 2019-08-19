@@ -2,41 +2,57 @@ Page({
       data: {
         markers: [],
         move:true,
+        iem:null,
+        setInter:'',
+        pack:1,//重复心跳重连检测
+        battery:100,
+        gps:false,
       },
     onLoad: function() { 
         // this.linkSocket()
         const that = this;
-		var openid = wx.getStorageSync('openid');
-		console.log("openid",openid);
-		if(!openid){
-			wx.login({
-				success:function(res){
-				  console.log("uuuuuuuuuuuuu",res)
-				  var obj = {code:res.code};
-				  that.getUser(obj);
-				}
-			})
-		}else{
-			var obj = {openid:openid};
-			that.getUser(obj);
-		}
+        var iem = wx.getStorageSync("iem");
+        if(iem > 0){
+            that.setData({iem:iem});
+        }else{
+            var openid = wx.getStorageSync('openid');
+            console.log("openid",openid);
+            if(!openid){
+                wx.login({
+                    success:function(res){
+                      console.log("uuuuuuuuuuuuu",res)
+                      var obj = {act:"login",code:res.code};
+                      that.getUser(obj);
+                    }
+                })
+            }else{
+                var obj = {act:"login",openid:openid};
+                that.getUser(obj);
+            }
+        }
+
+        var obj = {act:"get",imei:that.data.iem,pack:"gps"};
+        that.changeGps(obj);
 
         wx.connectSocket({
           url: 'wss://www.chongwu-family.xyz:9603'
         })
 
         wx.onSocketOpen(function(res) {
+        console.log("sssssssssss",iem)
+            if(that.data.setInter){
+                that.endSetInter();
+                that.setData({pack:1});
+            }
+            console.log("iemssssss",that.data.iem)
             wx.sendSocketMessage({
-              data:"352544071751714"
+              data:that.data.iem
             })
         })
         wx.onSocketMessage(function (data) {
-            // console.log("onSocketMessage ", data.data)
+            console.log("onSocketMessage ", data.data)
             var result = JSON.parse(data.data);
             console.log("onSocketMessage ", result.xpoint);
-            // that.setData({ 
-            //     markers: wxMarkerData 
-            // }); 
             if(result.ypoint && result.xpoint){
                 that.setData({
                     markers:[{
@@ -46,24 +62,68 @@ Page({
                         longitude: result.xpoint,
                         width: 18,
                         height: 20
-                    }]
+                    }],
+                    battery:result.battery
                 });
-                if(that.data.move){
+                // if(that.data.move){
                     that.setData({ 
                         latitude: result.ypoint,
                         longitude: result.xpoint,
                         move: false
                     }); 
-                }
+                // }
+            }
+        })
+        wx.onSocketError(function(data){
+            console.log('WebSocket连接打开失败')
+            if(that.data.pack == 1){
+                that.reconnect();
+            }
+        })
+        wx.onSocketClose(function(data){
+            console.log('WebSocket关闭了')
+            if(that.data.pack == 1){
+                that.reconnect();
             }
         })
     },
+    gpsChange: function (e){
+        var that = this;
+        var iem = that.data.iem;
+        var egps = e.detail.value;
+        if(egps){
+            console.log('switch1 发生 change 事件，携带值为', e.detail.value)
+            var pack = 'gps,0#';
+        }else{
+            var pack = 'gps,3#';
+        }
+        var obj = {act:"set",imei:iem,pack:pack};
+        console.log(obj);
+        that.changeGps(obj);
+    },
+    reconnect:function(){
+        var that = this;
+        that.setData({pack:2});
+        that.data.setInter = setInterval(function () {
+            console.log("aaa","dd")
+            wx.connectSocket({
+              url: 'wss://www.chongwu-family.xyz:9603'
+            })
+        }, 2500);
+    },
+    endSetInter:function(){
+        var that = this;
+        //清除计时器  即清除setInter
+        clearInterval(that.data.setInter);
+    },
 	getUser:function(obj){
+        var that = this;
 		wx.request({
 		url:'https://api.chongwu-family.xyz/login',
 		header:{'Content-Type': 'application/x-www-form-urlencoded'},
 		data:obj,
 		method:"post",
+        async:false,
 		dataType:"json",
 		success:function(res){
 		  // wx.setStorageSync('uid',res.data.uid);
@@ -72,13 +132,36 @@ Page({
 		  wx.setStorageSync('openid',result.openid);
 		  if(result.state == "no"){
 			console.log("iiiiiiiiiiiiiii","未登录，请重新绑定")
-				wx.redirectTo({
+				wx.switchTab({
 					url: '../login/index'
 				})
-		  }
+		  }else if(result.state == "yes"){
+            console.log("resultiem",result.iem);
+            wx.setStorageSync("iem",result.iem);
+            that.setData({iem:result.iem});
+          }
 		}
 	  })
-	}
+	},
+    changeGps:function(obj){
+        console.log(obj);
+        var that = this;
+        wx.request({
+            url:'https://api.chongwu-family.xyz/set',
+            header:{'Content-Type': 'application/x-www-form-urlencoded'},
+            data:obj,
+            method:"post",
+            dataType:"json",
+            success:function(res){
+              console.log("ffffffff",res)
+              if(res.data.result == '0'){
+                that.setData({"gps":"checked"});
+              }else if(res.data.result == '3'){
+                    that.setData({"gps":false});
+                }
+            }
+        })
+    }
 
 
 
