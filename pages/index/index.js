@@ -153,10 +153,10 @@ Page({
             method:"post",
             dataType:"json",
             success:function(res){
-              console.log("ffffffff",res)
-              if(res.data.result == '0'){
-                that.setData({"gps":"checked"});
-              }else if(res.data.result == '3'){
+                console.log("ffffffff",res)
+                    if(res.data.result == '0'){
+                    that.setData({"gps":"checked"});
+                }else if(res.data.result == '3'){
                     that.setData({"gps":false});
                 }
             }
