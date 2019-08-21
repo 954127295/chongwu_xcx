@@ -32,7 +32,7 @@ Page({
         }
 
         var obj = {act:"get",imei:that.data.iem,pack:"gps"};
-        that.changeGps(obj);
+        // that.changeGps(obj);
 
         wx.connectSocket({
           url: 'wss://www.chongwu-family.xyz:9603'

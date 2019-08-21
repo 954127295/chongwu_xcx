@@ -1,8 +1,16 @@
-<view class="battery">
-	<view class="battery1">
-		<view style="background-color:#1AAD19;width:{{battery-2}}%;height:28rpx;margin-left:1rpx;margin-top:1rpx;"></view>
+<view class="battery_all">
+	<view class="gps_on_off">
+		<view class="body-view">
+			<text class="gpstext">gps:</text><switch checked="{{gps}}" bindchange="gpsChange"/>
+		</view>
 	</view>
-	<view class="battery2"></view>
+	<view class="battery">
+		<view class="battery1">
+			<view style="background-color:#1AAD19;width:{{battery-5}}%;height:22rpx;margin-left:2rpx;margin-top:2rpx;"></view>
+		</view>
+		<view class="battery2"></view>
+	</view>
+	<view style="clear:both;"></view>
 </view>
 <map id="map" longitude="{{longitude}}" latitude="{{latitude}}" scale="14" markers="{{markers}}" show-location style="width: 100%; height: 300px;"></map>
 gps开关：
