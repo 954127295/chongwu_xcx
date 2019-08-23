@@ -7,6 +7,8 @@ Page({
         pack:1,//重复心跳重连检测
         battery:100,
         gps:false,
+        shutdown:false,
+        close:false
       },
     onLoad: function() { 
         // this.linkSocket()
@@ -31,8 +33,12 @@ Page({
             }
         }
 
-        var obj = {act:"get",imei:that.data.iem,pack:"gps"};
-        // that.changeGps(obj);
+        var obj = {act:"get",method:"gps",imei:that.data.iem,pack:"gps"};
+        that.changeGps(obj);
+
+        var obj = {act:"get",method:"shutdown",imei:iem,pack:"shutdown"};
+        console.log(obj);
+        that.shutdownGps(obj);
 
         wx.connectSocket({
           url: 'wss://www.chongwu-family.xyz:9603'
@@ -65,13 +71,22 @@ Page({
                     }],
                     battery:result.battery
                 });
-                // if(that.data.move){
+                if(that.data.move){
                     that.setData({ 
                         latitude: result.ypoint,
                         longitude: result.xpoint,
                         move: false
                     }); 
-                // }
+                }
+                if(result.shutdown == "yes"){
+                    that.setData({ 
+                        shutdown: false,
+                    });
+                }else if(result.shutdown == "no"){
+                    that.setData({ 
+                        shutdown: "checked",
+                    });
+                }
             }
         })
         wx.onSocketError(function(data){
@@ -97,9 +112,30 @@ Page({
         }else{
             var pack = 'gps,3#';
         }
-        var obj = {act:"set",imei:iem,pack:pack};
+        var obj = {act:"set",method:"gps",imei:iem,pack:pack};
         console.log(obj);
         that.changeGps(obj);
+    },
+    shutdownChange: function (e){
+        var that = this;
+        var iem = that.data.iem;
+        var eshut = e.detail.value;
+        if(!eshut){
+            console.log('switch1 发生 change 事件，携带值为', e.detail.value)
+            var pack = 'shutdown#';
+            var obj = {act:"set",method:"shutdown",imei:iem,pack:pack};
+            console.log(obj);
+            that.shutdownGps(obj);
+        }else{
+            wx.showToast({
+                title: '请长按设备开机键 开启设备',
+                icon: 'none',
+                duration: 2000
+            })
+            that.setData({
+                shutdown:false
+            });
+        }
     },
     reconnect:function(){
         var that = this;
@@ -143,6 +179,26 @@ Page({
 		}
 	  })
 	},
+    shutdownGps:function(obj){
+        console.log(obj);
+        var that = this;
+        wx.request({
+            url:'https://api.chongwu-family.xyz/set',
+            header:{'Content-Type': 'application/x-www-form-urlencoded'},
+            data:obj,
+            method:"post",
+            dataType:"json",
+            success:function(res){
+                console.log("555555555",res.data)
+                if(res.data.result == 'yes'){
+                    that.setData({"shutdown":false});
+                    //显示已关机弹屏
+                }else if(res.data.result == 'no'){
+                    that.setData({"shutdown":"checked"});
+                }
+            }
+        })
+    },
     changeGps:function(obj){
         console.log(obj);
         var that = this;
@@ -154,7 +210,7 @@ Page({
             dataType:"json",
             success:function(res){
                 console.log("ffffffff",res)
-                    if(res.data.result == '0'){
+                if(res.data.result == '0'){
                     that.setData({"gps":"checked"});
                 }else if(res.data.result == '3'){
                     that.setData({"gps":false});

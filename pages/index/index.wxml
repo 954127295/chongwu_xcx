@@ -1,9 +1,16 @@
 <view class="battery_all">
 	<view class="gps_on_off">
 		<view class="body-view">
-			<text class="gpstext">gps:</text><switch checked="{{gps}}" bindchange="gpsChange"/>
+			<text class="gpstext">gps开关：</text><switch checked="{{gps}}" bindchange="gpsChange"/>
 		</view>
 	</view>
+
+	<view class="gps_on_off">
+		<view class="body-view">
+			<text class="gpstext">设备开关：</text><switch checked="{{shutdown}}" bindchange="shutdownChange"/>
+		</view>
+	</view>
+
 	<view class="battery">
 		<view class="battery1">
 			<view style="background-color:#1AAD19;width:{{battery-5}}%;height:22rpx;margin-left:2rpx;margin-top:2rpx;"></view>
@@ -12,9 +19,4 @@
 	</view>
 	<view style="clear:both;"></view>
 </view>
-<map id="map" longitude="{{longitude}}" latitude="{{latitude}}" scale="14" markers="{{markers}}" show-location style="width: 100%; height: 300px;"></map>
-gps开关：
-<view class="body-view">
-    <switch checked="{{gps}}" bindchange="gpsChange"/>
-</view>
-{{battery}}
+<map id="map" class="map" longitude="{{longitude}}" latitude="{{latitude}}" scale="14" markers="{{markers}}" show-location></map>
